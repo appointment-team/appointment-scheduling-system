@@ -28,4 +28,35 @@ public class BookingService {
 
         return true;
     }
+
+    public boolean modifyAppointment(Appointment appointment, String newTime){
+
+        if(!appointment.isFuture()){
+            System.out.println("Cannot modify past appointments");
+            return false;
+        }
+
+        appointment.setTime(newTime);
+
+        System.out.println("Appointment modified");
+
+        return true;
+    }
+    public boolean cancelAppointment(Appointment appointment){
+
+        if(!appointment.isFuture()){
+            System.out.println("Cannot cancel past appointments");
+            return false;
+        }
+
+        appointment.cancel();
+
+        System.out.println("Appointment cancelled");
+
+        return true;
+    }
+
+
+
+
 }
