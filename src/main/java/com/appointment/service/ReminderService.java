@@ -11,10 +11,10 @@ public class ReminderService {
         this.observer = observer;
 
 
-    public void sendReminder(Appointment appointment) {
+        public void sendReminder (Appointment appointment){
 
-        String message = "Reminder: your appointment at " + appointment.getTime();
+            String message = "Reminder: your appointment at " + appointment.getTime();
 
-        observer.notify(appointment.getUser(), message);
+            observer.notify(appointment.getUser(), message);
+        }
     }
-}
