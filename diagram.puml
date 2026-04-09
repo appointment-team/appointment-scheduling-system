@@ -1,0 +1,124 @@
+@startuml
+interface BookingRuleStrategy {
+  + isValid(a: Appointment): boolean
+}
+
+interface Observer {
+  + notify(user: User, message: String): void
+}
+
+class User {
+  - username: String
+  - password: String
+  + getUsername(): String
+  + getPassword(): String
+}
+
+class Administrator {
+  - username: String
+  - password: String
+}
+
+class Appointment {
+  - date: String
+  - time: String
+  - duration: int
+  - participants: int
+  - status: String
+  - type: AppointmentType
+  + confirm(): void
+  + cancel(): void
+  + isFuture(): boolean
+}
+
+class AppointmentSlot {
+  - time: String
+  - booked: boolean
+  + book(): void
+  + isBooked(): boolean
+}
+
+enum AppointmentType {
+  URGENT
+  FOLLOW_UP
+  ASSESSMENT
+  VIRTUAL
+  IN_PERSON
+  INDIVIDUAL
+  GROUP
+}
+
+class DurationRule
+class GroupRule
+class IndividualRule
+class UrgentRule
+class FollowUpRule
+class VirtualRule
+class ParticipantLimitRule
+
+class AuthService {
+  - loggedInAdmin: Administrator
+  + login(): boolean
+  + logout(): void
+  + isLoggedIn(): boolean
+}
+
+class BookingService {
+  - appointments: List
+  - rules: List
+  + book(a: Appointment): boolean
+  + cancelAppointment(): boolean
+  + adminCancel(): boolean
+  + adminModify(): boolean
+}
+
+class ScheduleService {
+  - slots: List
+  + getAvailableSlots(): List
+}
+
+class AppointmentValidator {
+  - commonRules: List
+  - typeRules: Map
+  + validate(a: Appointment): boolean
+}
+
+class ReminderService {
+  - observer: Observer
+  + sendReminder(a: Appointment): void
+}
+
+class NotificationService {
+  + notify(user: User, msg: String): void
+}
+
+' Inheritance
+Administrator --|> User
+
+' Domain relationships
+Appointment --> User
+Appointment --> AppointmentType
+
+' Rules implementations
+DurationRule ..|> BookingRuleStrategy
+GroupRule ..|> BookingRuleStrategy
+IndividualRule ..|> BookingRuleStrategy
+UrgentRule ..|> BookingRuleStrategy
+FollowUpRule ..|> BookingRuleStrategy
+VirtualRule ..|> BookingRuleStrategy
+ParticipantLimitRule ..|> BookingRuleStrategy
+
+' Observer implementation
+NotificationService ..|> Observer
+
+' Service relationships
+AuthService --> Administrator
+BookingService --> Appointment : books
+BookingService --> Administrator : adminCancel/Modify
+BookingService --> BookingRuleStrategy : uses
+AppointmentValidator --> BookingRuleStrategy : validates
+ReminderService --> Observer : notifies
+ScheduleService --> AppointmentSlot : manages
+Administrator --> Appointment : manages
+
+@enduml
