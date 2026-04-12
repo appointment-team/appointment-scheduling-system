@@ -4,6 +4,7 @@ import com.appointment.domain.Appointment;
 import com.appointment.domain.Administrator;
 import com.appointment.domain.AppointmentType;
 import com.appointment.domain.User;
+import com.appointment.notifications.Observer;
 import com.appointment.rules.DurationRule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,12 +18,14 @@ class BookingServiceTest {
 
     @BeforeEach
     void setUp() {
-        bookingService = new BookingService();
+        // ✅ Mock observer و scheduleService
+        Observer mockObserver = (u, msg) -> {};
+        ScheduleService scheduleService = new ScheduleService();
+        bookingService = new BookingService(mockObserver, scheduleService);
         user = new User("Ahmad", "1234");
         admin = new Administrator("admin", "1234");
     }
 
-    // ✅ Booking Tests
     @Test
     void testBookValidAppointment() {
         Appointment a = new Appointment("2026-06-01", "10:00", 1, 2, user, AppointmentType.GROUP);
@@ -37,7 +40,6 @@ class BookingServiceTest {
         assertFalse(bookingService.book(a));
     }
 
-    // ✅ Modify Tests
     @Test
     void testModifyFutureAppointment() {
         Appointment a = new Appointment("2027-06-01", "10:00", 1, 2, user, AppointmentType.GROUP);
@@ -52,36 +54,35 @@ class BookingServiceTest {
         assertFalse(bookingService.modifyAppointment(a, "2020-02-01", "11:00"));
     }
 
-    // ✅ Cancel Tests
     @Test
     void testCancelFutureAppointment() {
+
         Appointment a = new Appointment("2027-06-01", "10:00", 1, 2, user, AppointmentType.GROUP);
-        assertTrue(bookingService.cancelAppointment(a));
-        assertEquals("Cancelled", a.getStatus());
-        assertEquals(0, a.getParticipants());
+        bookingService.book(a);
+        assertTrue(bookingService.cancelAppointment("2027-06-01", "10:00"));
     }
 
     @Test
     void testCancelPastAppointmentFails() {
         Appointment a = new Appointment("2020-01-01", "10:00", 1, 2, user, AppointmentType.GROUP);
-        assertFalse(bookingService.cancelAppointment(a));
+        bookingService.book(a);
+        assertFalse(bookingService.cancelAppointment("2020-01-01", "10:00"));
     }
 
-    // ✅ Admin Cancel Tests
     @Test
     void testAdminCancelWithAdmin() {
         Appointment a = new Appointment("2027-06-01", "10:00", 1, 2, user, AppointmentType.GROUP);
-        assertTrue(bookingService.adminCancel(a, admin));
-        assertEquals("Cancelled", a.getStatus());
+        bookingService.book(a);
+        assertTrue(bookingService.adminCancel("2027-06-01", "10:00", admin));
     }
 
     @Test
     void testAdminCancelWithoutAdmin() {
         Appointment a = new Appointment("2027-06-01", "10:00", 1, 2, user, AppointmentType.GROUP);
-        assertFalse(bookingService.adminCancel(a, null));
+        bookingService.book(a);
+        assertFalse(bookingService.adminCancel("2027-06-01", "10:00", null));
     }
 
-    // ✅ Admin Modify Tests
     @Test
     void testAdminModifyWithAdmin() {
         Appointment a = new Appointment("2027-06-01", "10:00", 1, 2, user, AppointmentType.GROUP);

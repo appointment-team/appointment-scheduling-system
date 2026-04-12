@@ -21,4 +21,7 @@ public class AppointmentSlot {
     public void book() {
         booked = true;
     }
+    public void free() {
+        booked = false;
+    }
 }

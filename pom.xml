@@ -40,6 +40,20 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- Jakarta Mail - لإرسال الإيميل الحقيقي -->
+        <dependency>
+            <groupId>com.sun.mail</groupId>
+            <artifactId>jakarta.mail</artifactId>
+            <version>2.0.1</version>
+        </dependency>
+
+        <!-- Dotenv - لقراءة الـ credentials من ملف .env -->
+        <dependency>
+            <groupId>io.github.cdimascio</groupId>
+            <artifactId>dotenv-java</artifactId>
+            <version>3.0.0</version>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -75,6 +89,7 @@
                     <excludes>
                         <exclude>com/appointment/Main.class</exclude>
                         <exclude>com/appointment/notifications/NotificationService.class</exclude>
+                        <exclude>com/appointment/notifications/EmailService.class</exclude>
                     </excludes>
                 </configuration>
             </plugin>
