@@ -208,7 +208,7 @@ public class BookingService {
             while ((line = reader.readLine()) != null) {
                 String[] parts = line.split(",");
                 if (parts.length == 7) {
-                    User user = new User(parts[4], "0000");
+                    User user = new User(parts[4], "0000", "unknown@email.com");
                     Appointment a = new Appointment(
                             parts[0],
                             parts[1],

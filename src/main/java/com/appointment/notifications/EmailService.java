@@ -32,7 +32,8 @@ public class EmailService implements Observer {
      */
     @Override
     public void notify(User user, String message) {
-        sendEmail(username, "Appointment Reminder",
+        sendEmail(user.getEmail(), // ← إيميل الـ user مش إيميلك
+                "Appointment Reminder",
                 "Dear " + user.getUsername() + ",\n\n" + message + "\n\nBest regards");
     }
 

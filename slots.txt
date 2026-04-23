@@ -1,4 +1,4 @@
-09:00,false
+08:00,false
 10:00,false
 11:00,false
 12:00,false

@@ -11,7 +11,7 @@ class EmailServiceTest {
 
     @Test
     void testEmailServiceWithMock() {
-        // ✅ Mock بدل إيميل حقيقي
+        //  Mock بدل إيميل حقيقي
         boolean[] emailSent = {false};
         String[] sentMessage = {""};
 
@@ -30,7 +30,7 @@ class EmailServiceTest {
         ReminderService service = new ReminderService(mockEmailService);
         service.sendReminder(a);
 
-        // تحقق إن الإيميل اتبعت
+
         assertTrue(emailSent[0], "Email should have been sent");
         assertTrue(sentMessage[0].contains("10:00"), "Message should contain time");
     }

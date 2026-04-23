@@ -144,7 +144,9 @@ public class Main {
     static void userMenu() {
         System.out.print("Enter your name: ");
         String name = scanner.nextLine();
-        currentUser = new User(name, "0000");
+        System.out.print("Enter your email: ");
+        String email = scanner.nextLine();
+        currentUser = new User(name, "0000", email);
 
         boolean running = true;
         while (running) {
