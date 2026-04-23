@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class UrgentRuleTest {
 
     UrgentRule rule = new UrgentRule();
-    User user = new User("Ahmad", "1234");
+    User user = new User("Ahmad", "1234", "ahmad@gmail.com");
 
     @Test
     void testValidUrgent() {

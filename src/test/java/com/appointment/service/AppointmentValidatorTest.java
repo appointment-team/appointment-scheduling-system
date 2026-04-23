@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class AppointmentValidatorTest {
 
     AppointmentValidator validator = new AppointmentValidator();
-    User user = new User("Ahmad", "1234");
+    User user = new User("Ahmad", "1234", "ahmad@gmail.com");
 
     @Test
     void testValidAppointment() {

@@ -11,7 +11,7 @@ class AppointmentTest {
 
     @BeforeEach
     void setUp() {
-        user = new User("Ahmad", "1234");
+        user = new User("Ahmad", "1234", "ahmad@gmail.com");
         appointment = new Appointment(
                 "2026-06-01", "10:00", 1, 2, user, AppointmentType.INDIVIDUAL
         );

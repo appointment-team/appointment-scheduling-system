@@ -11,7 +11,6 @@ class EmailServiceTest {
 
     @Test
     void testEmailServiceWithMock() {
-        //  Mock بدل إيميل حقيقي
         boolean[] emailSent = {false};
         String[] sentMessage = {""};
 
@@ -22,14 +21,14 @@ class EmailServiceTest {
             System.out.println("Message: " + message);
         };
 
-        User user = new User("Ahmad", "1234");
+        // ✅ أضف User هنا
+        User user = new User("Ahmad", "1234", "ahmad@gmail.com");
         Appointment a = new Appointment(
                 "2026-06-01", "10:00", 1, 1, user, AppointmentType.INDIVIDUAL
         );
 
         ReminderService service = new ReminderService(mockEmailService);
         service.sendReminder(a);
-
 
         assertTrue(emailSent[0], "Email should have been sent");
         assertTrue(sentMessage[0].contains("10:00"), "Message should contain time");
@@ -43,7 +42,6 @@ class EmailServiceTest {
             emailSent[0] = true;
         };
 
-        // ما شغّلنا sendReminder
         assertFalse(emailSent[0], "Email should not be sent without reminder");
     }
 }

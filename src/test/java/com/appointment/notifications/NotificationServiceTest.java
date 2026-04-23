@@ -20,7 +20,7 @@ class NotificationServiceTest {
             assertTrue(message.contains("10:00"));
         };
 
-        User user = new User("Ahmad", "1234");
+        User user = new User("Ahmad", "1234", "ahmad@gmail.com");
         Appointment a = new Appointment(
                 "2026-06-01", "10:00", 1, 1, user, AppointmentType.INDIVIDUAL
         );
@@ -39,7 +39,7 @@ class NotificationServiceTest {
             called[0] = true;
         };
 
-        User user = new User("Ahmad", "1234");
+        User user = new User("Ahmad", "1234", "ahmad@gmail.com");
         Appointment a = new Appointment(
                 "2026-06-01", "10:00", 1, 1, user, AppointmentType.INDIVIDUAL
         );

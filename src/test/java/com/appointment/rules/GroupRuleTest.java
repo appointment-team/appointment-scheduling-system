@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class GroupRuleTest {
 
     GroupRule rule = new GroupRule();
-    User user = new User("Ahmad", "1234");
+    User user = new User("Ahmad", "1234", "ahmad@gmail.com");
 
     @Test
     void testValidGroup() {

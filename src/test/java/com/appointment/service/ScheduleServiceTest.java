@@ -12,6 +12,7 @@ class ScheduleServiceTest {
 
     @BeforeEach
     void setUp() {
+        new java.io.File("slots.txt").delete();
         scheduleService = new ScheduleService();
     }
 
@@ -46,5 +47,21 @@ class ScheduleServiceTest {
         scheduleService.addSlot("20:00");
         int after = scheduleService.getAvailableSlots().size();
         assertEquals(before + 1, after);
+    }
+    @Test
+    void testFreeSlot() {
+        List<AppointmentSlot> slots = scheduleService.getAvailableSlots();
+        slots.get(0).book();
+        int booked = scheduleService.getAvailableSlots().size();
+        scheduleService.freeSlot(slots.get(0).getTime());
+        // بعد freeSlot يرجع متاح
+        assertTrue(scheduleService.getAvailableSlots().size() > booked);
+    }
+
+    @Test
+    void testAddDuplicateSlot() {
+        int before = scheduleService.getAvailableSlots().size();
+        scheduleService.addSlot("10:00"); // موجود بالفعل
+        assertEquals(before, scheduleService.getAvailableSlots().size());
     }
 }

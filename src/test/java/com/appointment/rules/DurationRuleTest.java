@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class DurationRuleTest {
 
     DurationRule rule = new DurationRule();
-    User user = new User("Ahmad", "1234");
+    User user = new User("Ahmad", "1234", "ahmad@gmail.com");
 
     @Test
     void testValidDuration() {

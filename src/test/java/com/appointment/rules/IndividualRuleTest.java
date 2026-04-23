@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class IndividualRuleTest {
 
     IndividualRule rule = new IndividualRule();
-    User user = new User("Ahmad", "1234");
+    User user = new User("Ahmad", "1234", "ahmad@gmail.com");
 
     @Test
     void testValidIndividual() {

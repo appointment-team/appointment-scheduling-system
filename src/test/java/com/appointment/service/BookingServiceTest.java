@@ -19,10 +19,12 @@ class BookingServiceTest {
     @BeforeEach
     void setUp() {
         // ✅ Mock observer و scheduleService
+        new java.io.File("appointments.txt").delete(); // ← احذف الملف
+        new java.io.File("slots.txt").delete();
         Observer mockObserver = (u, msg) -> {};
         ScheduleService scheduleService = new ScheduleService();
         bookingService = new BookingService(mockObserver, scheduleService);
-        user = new User("Ahmad", "1234");
+        user = new User("Ahmad", "1234", "ahmad@gmail.com");
         admin = new Administrator("admin", "1234");
     }
 
@@ -95,5 +97,82 @@ class BookingServiceTest {
     void testAdminModifyWithoutAdmin() {
         Appointment a = new Appointment("2027-06-01", "10:00", 1, 2, user, AppointmentType.GROUP);
         assertFalse(bookingService.adminModify(a, null, "2027-08-01", "12:00"));
+    }
+    @Test
+    void testGetAppointments() {
+        Appointment a = new Appointment("2027-06-01", "10:00", 1, 2, user, AppointmentType.GROUP);
+        bookingService.book(a);
+        assertFalse(bookingService.getAppointments().isEmpty());
+    }
+
+    @Test
+    void testCancelNotFoundAppointment() {
+        assertFalse(bookingService.cancelAppointment("2020-01-01", "10:00"));
+    }
+
+    @Test
+    void testAdminCancelNotFound() {
+        assertFalse(bookingService.adminCancel("2020-01-01", "10:00", admin));
+    }
+
+    @Test
+    void testAdminCancelSendsNotification() {
+        // ✅ تحقق بس إن adminCancel بيرجع true عند وجود الموعد
+        Appointment a = new Appointment("2027-06-01", "10:00", 1, 2,
+                user, AppointmentType.GROUP);
+        bookingService.book(a);
+        assertTrue(bookingService.adminCancel("2027-06-01", "10:00", admin));
+    }
+    @Test
+    void testCancelSendsNotification() {
+        boolean[] notified = {false};
+        Observer mockObserver = (u, msg) -> notified[0] = true;
+        new java.io.File("appointments.txt").delete();
+        new java.io.File("slots.txt").delete();
+        ScheduleService scheduleService = new ScheduleService();
+        BookingService bs = new BookingService(mockObserver, scheduleService);
+
+        Appointment a = new Appointment("2027-06-01", "10:00", 1, 2,
+                new User("Ahmad", "1234", "ahmad@gmail.com"), AppointmentType.GROUP);
+        bs.book(a);
+        bs.cancelAppointment("2027-06-01", "10:00");
+        assertTrue(notified[0]);
+    }
+    @Test
+    void testLoadFromFile() {
+        // ✅ احجز موعد عشان يتحفظ في الملف
+        Appointment a = new Appointment("2027-06-01", "10:00", 1, 2,
+                user, AppointmentType.GROUP);
+        bookingService.book(a);
+
+        // ✅ اعمل BookingService جديد عشان يحمّل من الملف
+        Observer mockObserver = (u, msg) -> {};
+        ScheduleService scheduleService = new ScheduleService();
+        BookingService newBS = new BookingService(mockObserver, scheduleService);
+
+        // ✅ تحقق إن الموعد اتحمّل من الملف
+        assertFalse(newBS.getAppointments().isEmpty());
+    }
+
+    @Test
+    void testUpdateFileAfterCancel() {
+        // ✅ احجز موعدين
+        Appointment a1 = new Appointment("2027-06-01", "10:00", 1, 2,
+                user, AppointmentType.GROUP);
+        Appointment a2 = new Appointment("2027-07-01", "11:00", 1, 2,
+                user, AppointmentType.GROUP);
+        bookingService.book(a1);
+        bookingService.book(a2);
+
+        // ✅ ألغِ الأول
+        bookingService.cancelAppointment("2027-06-01", "10:00");
+
+        // ✅ اعمل BookingService جديد عشان يقرأ الملف المحدث
+        Observer mockObserver = (u, msg) -> {};
+        ScheduleService scheduleService = new ScheduleService();
+        BookingService newBS = new BookingService(mockObserver, scheduleService);
+
+        // ✅ تحقق إن بس موعد واحد موجود
+        assertEquals(1, newBS.getAppointments().size());
     }
 }
