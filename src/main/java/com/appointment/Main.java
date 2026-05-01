@@ -8,16 +8,48 @@ import io.github.cdimascio.dotenv.Dotenv;
 
 import java.util.List;
 import java.util.Scanner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Main entry point for the Appointment Scheduling System.
- * @author YourName
+ * Provides a CLI menu for both administrators and regular users
+ * to view, book, modify and cancel appointments.
+ *
+ * @author Appointment Team
  * @version 1.0
  */
 public class Main {
 
+    // ============================================================
+    // ✅ Code Smell 1 — Logger replaces direct System.out usage
+    //    SonarCloud rule: java:S106
+    // ============================================================
+    private static final Logger LOGGER = Logger.getLogger(Main.class.getName());
+
+    // ============================================================
+    // ✅ Code Smell 2 — Constant for repeated literal "Choose: "
+    //    SonarCloud rule: java:S1192 (used 3+ times)
+    // ============================================================
+    private static final String CHOOSE = "Choose: ";
+
+    // ============================================================
+    // ✅ Code Smell 3 — Constant for repeated literal "❌ Invalid choice"
+    //    SonarCloud rule: java:S1192 (used 4+ times)
+    // ============================================================
+    private static final String INVALID_CHOICE = "❌ Invalid choice";
+
+    // Extra constants to remove other duplicated literals
+    private static final String NO_APPOINTMENTS = "❌ No appointments found";
+    private static final String NO_SLOTS = "❌ No available slots";
+    private static final String DATE_PROMPT = "Enter date (YYYY-MM-DD): ";
+    private static final String TIME_PROMPT = "Enter time (HH:MM): ";
+    private static final String SLOTS_HEADER = "\n--- Available Slots ---";
+    private static final String APPOINTMENTS_HEADER = "\n--- All Appointments ---";
+    private static final String CANCELLED_STATUS = "Cancelled";
+
     static AuthService authService = new AuthService();
-    static BookingService bookingService; // ← احذف = new BookingService()
+    static BookingService bookingService;
     static ScheduleService scheduleService = new ScheduleService();
     static Observer observer;
     static ReminderService reminderService;
@@ -26,15 +58,16 @@ public class Main {
 
     public static void main(String[] args) {
 
-        // ✅ تحميل الـ credentials من .env
+        // ✅ Load credentials from .env
         Dotenv dotenv = Dotenv.load();
         String email = dotenv.get("EMAIL_USERNAME");
         String password = dotenv.get("EMAIL_PASSWORD");
 
-        // ✅ استخدام EmailService الحقيقي
+        // ✅ Use real EmailService
         observer = new EmailService(email, password);
         reminderService = new ReminderService(observer);
         bookingService = new BookingService(observer, scheduleService);
+
         System.out.println("========================================");
         System.out.println("   Appointment Scheduling System       ");
         System.out.println("========================================");
@@ -46,7 +79,7 @@ public class Main {
             System.out.println("1. Login as Administrator");
             System.out.println("2. Continue as User");
             System.out.println("3. Exit");
-            System.out.print("Choose: ");
+            System.out.print(CHOOSE);
 
             String choice = scanner.nextLine();
 
@@ -54,10 +87,10 @@ public class Main {
                 case "1" -> adminMenu();
                 case "2" -> userMenu();
                 case "3" -> {
-                    System.out.println("Goodbye!");
+                    LOGGER.info("Goodbye!");
                     running = false;
                 }
-                default -> System.out.println("❌ Invalid choice");
+                default -> LOGGER.warning(INVALID_CHOICE);
             }
         }
     }
@@ -72,11 +105,11 @@ public class Main {
         String password = scanner.nextLine();
 
         if (!authService.login(username, password)) {
-            System.out.println("❌ Invalid credentials");
+            LOGGER.warning("❌ Invalid credentials");
             return;
         }
 
-        System.out.println("✅ Admin logged in!");
+        LOGGER.info("✅ Admin logged in!");
 
         boolean running = true;
         while (running) {
@@ -86,7 +119,7 @@ public class Main {
             System.out.println("3. Cancel any appointment");
             System.out.println("4. View all appointments");
             System.out.println("5. Logout");
-            System.out.print("Choose: ");
+            System.out.print(CHOOSE);
 
             String choice = scanner.nextLine();
 
@@ -97,34 +130,35 @@ public class Main {
                 case "4" -> viewAllAppointments();
                 case "5" -> {
                     authService.logout();
-                    System.out.println("✅ Logged out");
+                    LOGGER.info("✅ Logged out");
                     running = false;
                 }
-                default -> System.out.println("❌ Invalid choice");
+                default -> LOGGER.warning(INVALID_CHOICE);
             }
         }
     }
 
     // =========================
-// ADD SLOT
-// =========================
+    // ADD SLOT
+    // =========================
     static void addSlot() {
         System.out.print("Enter slot time (HH:MM): ");
         String time = scanner.nextLine();
         scheduleService.addSlot(time);
     }
+
     // =========================
-// VIEW ALL APPOINTMENTS
-// =========================
+    // VIEW ALL APPOINTMENTS
+    // =========================
     static void viewAllAppointments() {
         List<Appointment> appointments = bookingService.getAppointments();
 
         if (appointments.isEmpty()) {
-            System.out.println("❌ No appointments found");
+            LOGGER.warning(NO_APPOINTMENTS);
             return;
         }
 
-        System.out.println("\n--- All Appointments ---");
+        System.out.println(APPOINTMENTS_HEADER);
         int i = 1;
         for (Appointment a : appointments) {
             System.out.println(i + ". " +
@@ -155,7 +189,7 @@ public class Main {
             System.out.println("2. Book appointment");
             System.out.println("3. Cancel appointment");
             System.out.println("4. Back");
-            System.out.print("Choose: ");
+            System.out.print(CHOOSE);
 
             String choice = scanner.nextLine();
 
@@ -164,7 +198,7 @@ public class Main {
                 case "2" -> bookAppointment();
                 case "3" -> cancelAppointment();
                 case "4" -> running = false;
-                default -> System.out.println("❌ Invalid choice");
+                default -> LOGGER.warning(INVALID_CHOICE);
             }
         }
     }
@@ -175,10 +209,10 @@ public class Main {
     static void viewSlots() {
         List<AppointmentSlot> slots = scheduleService.getAvailableSlots();
         if (slots.isEmpty()) {
-            System.out.println("❌ No available slots");
+            LOGGER.warning(NO_SLOTS);
             return;
         }
-        System.out.println("\n--- Available Slots ---");
+        System.out.println(SLOTS_HEADER);
         for (int i = 0; i < slots.size(); i++) {
             System.out.println((i + 1) + ". " + slots.get(i).getTime());
         }
@@ -191,11 +225,11 @@ public class Main {
         List<AppointmentSlot> slots = scheduleService.getAvailableSlots();
 
         if (slots.isEmpty()) {
-            System.out.println("❌ No available slots");
+            LOGGER.warning(NO_SLOTS);
             return;
         }
 
-        System.out.println("\n--- Available Slots ---");
+        System.out.println(SLOTS_HEADER);
         for (int i = 0; i < slots.size(); i++) {
             System.out.println((i + 1) + ". " + slots.get(i).getTime());
         }
@@ -204,7 +238,7 @@ public class Main {
         int choice = Integer.parseInt(scanner.nextLine()) - 1;
 
         if (choice < 0 || choice >= slots.size()) {
-            System.out.println("❌ Invalid choice");
+            LOGGER.warning(INVALID_CHOICE);
             return;
         }
 
@@ -238,42 +272,44 @@ public class Main {
 
         AppointmentValidator validator = new AppointmentValidator();
         if (!validator.validate(appointment)) {
-            System.out.println("❌ Appointment not valid");
+            LOGGER.warning("❌ Appointment not valid");
             return;
         }
 
-        // ✅ تحقق إذا في موعد بنفس التاريخ والوقت
+        // ✅ Check if slot is already taken at the same date and time
         boolean slotTaken = false;
         for (Appointment a : bookingService.getAppointments()) {
             if (a.getDate().equals(date) && a.getTime().equals(time)
-                    && !a.getStatus().equals("Cancelled")) {
+                    && !a.getStatus().equals(CANCELLED_STATUS)) {
                 slotTaken = true;
                 break;
             }
         }
 
         if (slotTaken) {
-            System.out.println("❌ This slot is already booked for this date and time");
+            LOGGER.warning("❌ This slot is already booked for this date and time");
             return;
         }
 
         bookingService.book(appointment);
 
-        // ✅ إرسال إيميل حقيقي
+        // ✅ Send real email reminder
         reminderService.sendReminder(appointment);
-        System.out.println("✅ Appointment booked: " + date + " at " + time);
-        System.out.println("📧 Email reminder sent!");
+
+        if (LOGGER.isLoggable(Level.INFO)) {
+            LOGGER.info(String.format("✅ Appointment booked: %s at %s", date, time));
+        }
+        LOGGER.info("📧 Email reminder sent!");
     }
 
     // =========================
     // CANCEL APPOINTMENT
     // =========================
     static void cancelAppointment() {
-        // عرض المواعيد المحجوزة
         List<Appointment> appointments = bookingService.getAppointments();
 
         if (appointments.isEmpty()) {
-            System.out.println("❌ No appointments found");
+            LOGGER.warning(NO_APPOINTMENTS);
             return;
         }
 
@@ -281,7 +317,7 @@ public class Main {
         int i = 1;
         for (Appointment a : appointments) {
             if (a.getUser().getUsername().equals(currentUser.getUsername())
-                    && !a.getStatus().equals("Cancelled")) {
+                    && !a.getStatus().equals(CANCELLED_STATUS)) {
                 System.out.println(i + ". Date: " + a.getDate() +
                         " | Time: " + a.getTime() +
                         " | Status: " + a.getStatus());
@@ -289,9 +325,9 @@ public class Main {
             i++;
         }
 
-        System.out.print("Enter date (YYYY-MM-DD): ");
+        System.out.print(DATE_PROMPT);
         String date = scanner.nextLine();
-        System.out.print("Enter time (HH:MM): ");
+        System.out.print(TIME_PROMPT);
         String time = scanner.nextLine();
 
         bookingService.cancelAppointment(date, time);
@@ -301,18 +337,17 @@ public class Main {
     // ADMIN CANCEL
     // =========================
     static void adminCancel() {
-        // عرض كل المواعيد
         List<Appointment> appointments = bookingService.getAppointments();
 
         if (appointments.isEmpty()) {
-            System.out.println("❌ No appointments found");
+            LOGGER.warning(NO_APPOINTMENTS);
             return;
         }
 
-        System.out.println("\n--- All Appointments ---");
+        System.out.println(APPOINTMENTS_HEADER);
         int i = 1;
         for (Appointment a : appointments) {
-            if (!a.getStatus().equals("Cancelled")) {
+            if (!a.getStatus().equals(CANCELLED_STATUS)) {
                 System.out.println(i + ". Date: " + a.getDate() +
                         " | Time: " + a.getTime() +
                         " | User: " + a.getUser().getUsername() +
@@ -321,13 +356,12 @@ public class Main {
             i++;
         }
 
-        System.out.print("Enter date (YYYY-MM-DD): ");
+        System.out.print(DATE_PROMPT);
         String date = scanner.nextLine();
-        System.out.print("Enter time (HH:MM): ");
+        System.out.print(TIME_PROMPT);
         String time = scanner.nextLine();
 
         Administrator admin = new Administrator("admin", "1234");
         bookingService.adminCancel(date, time, admin);
     }
-
 }
