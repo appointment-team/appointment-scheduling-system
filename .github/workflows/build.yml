@@ -6,7 +6,7 @@ on:
   pull_request:
     branches:
       - main
-
+ 
 jobs:
   build:
     name: Build and SonarCloud Scan
@@ -16,13 +16,13 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
+ 
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '21'
-
+ 
       - name: Cache Maven packages
         uses: actions/cache@v4
         with:
@@ -30,12 +30,24 @@ jobs:
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-maven-
-
-      - name: Build with Maven
-        run: mvn -B verify --file pom.xml
-
+ 
+      - name: Build with Maven and generate JaCoCo report
+        run: mvn -B verify jacoco:report --file pom.xml
+ 
       - name: SonarCloud Scan
         uses: SonarSource/sonarqube-scan-action@v6
+        with:
+          args: >
+            -Dsonar.projectKey=appointment-team_appointment-scheduling-system
+            -Dsonar.organization=appointment-team
+            -Dsonar.host.url=https://sonarcloud.io
+            -Dsonar.exclusions=**/Main.java
+            -Dsonar.coverage.exclusions=**/Main.java
+            -Dsonar.cpd.exclusions=**/Main.java
+            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
+            -Dsonar.java.binaries=target/classes
+            -Dsonar.sources=src/main/java
+            -Dsonar.tests=src/test/java
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: https://sonarcloud.io
