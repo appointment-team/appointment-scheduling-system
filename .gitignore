@@ -36,3 +36,12 @@ build/
 
 ### Mac OS ###
 .DS_Store
+
+### Generated data files ###
+appointments.txt
+slots.txt
+
+### Environment variables ###
+.env
+.env.local
+.env.*.local
